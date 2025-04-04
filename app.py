@@ -23,13 +23,17 @@ app = Flask(__name__)
 
 # Firebase setup
 firebase_key_path = os.getenv('FIREBASE_KEY_PATH')
-
 if not firebase_key_path:
-    raise Exception("FIREBASE_KEY_PATH environment variable is not set.")
+    raise Exception("FIREBASE_CONFIG environment variable is not set.")
 
-cred = credentials.Certificate(firebase_key_path)
-firebase_admin.initialize_app(cred)
+# Parse the JSON string into a dictionary
+firebase_key_path_dict = json.loads(firebase_key_path)
 
+# Pass the dict directly to Certificate
+cred = credentials.Certificate(firebase_key_path_dict)
+
+# Initialize Firebase
+initialize_app(cred)
 # Firestore DB
 db = firestore.client()
 
