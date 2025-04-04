@@ -15,9 +15,9 @@ from teams import (
     get_teams_sorted_by_points, get_top_teams, search_teams,
     clear_cache as clear_team_cache
 )
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
-load_dotenv()
+# load_dotenv()
 
 app = Flask(__name__)
 
