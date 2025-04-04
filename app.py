@@ -107,7 +107,7 @@ def api_clear_schedule_cache():
 @app.route('/api/schedule/<int:race_id>/sessions', methods=['GET'])
 def api_get_race_sessions(race_id):
     # Fetch the race data from Firestore where the race ID field matches the given race_id
-    race_ref = db.collection('races').where('id', '==', race_id).limit(1)
+    race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
     race_snapshot = race_ref.get()
 
     if not race_snapshot:
