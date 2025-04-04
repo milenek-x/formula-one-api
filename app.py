@@ -106,6 +106,7 @@ def api_clear_schedule_cache():
 # === SESSION ENDPOINTS ===
 @app.route('/api/schedule/<int:race_id>/sessions', methods=['GET'])
 def api_get_race_sessions(race_id):
+    # Fetch the race data from Firestore
     race = get_race_by_id(race_id)
 
     if not race:
@@ -117,8 +118,17 @@ def api_get_race_sessions(race_id):
     # Try both keys just in case
     race_url = race.get('url') or race.get('link')
 
+    # Scrape the session data for the race
     sessions = get_race_sessions(race_url)
-    return jsonify(sessions)
+
+    if sessions:
+        # Update the sessions in Firestore for this specific race
+        race_ref = db.collection('races').document(str(race_id))
+        race_ref.update({'sessions': sessions})
+        return jsonify(sessions)
+    else:
+        return jsonify({'error': 'No sessions found for this race.'}), 404
+
 
 @app.route('/api/sessions/cache/clear', methods=['POST'])
 def api_clear_session_cache():
