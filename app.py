@@ -106,11 +106,17 @@ def api_clear_schedule_cache():
 # === SESSION ENDPOINTS ===
 @app.route('/api/schedule/<int:race_id>/sessions', methods=['GET'])
 def api_get_race_sessions(race_id):
-    # Fetch the race data from Firestore
-    race = get_race_by_id(race_id)
+    # Fetch the race data from Firestore where the race ID field matches the given race_id
+    race_ref = db.collection('races').where('id', '==', race_id).limit(1)
+    race_snapshot = race_ref.get()
+
+    if not race_snapshot:
+        return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
+
+    race = race_snapshot[0].to_dict()  # Fetch the first document (if any) from the query
 
     if not race:
-        return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
+        return jsonify({'error': f'No race data found for ID {race_id}'}), 404
 
     if 'url' not in race and 'link' not in race:
         return jsonify({'error': 'Race found, but no "url" or "link" field available.'}), 400
@@ -123,12 +129,11 @@ def api_get_race_sessions(race_id):
 
     if sessions:
         # Update the sessions in Firestore for this specific race
-        race_ref = db.collection('races').document(str(race_id))
+        race_ref = db.collection('races').document(race_snapshot[0].id)  # Use the document ID to update
         race_ref.update({'sessions': sessions})
         return jsonify(sessions)
     else:
         return jsonify({'error': 'No sessions found for this race.'}), 404
-
 
 @app.route('/api/sessions/cache/clear', methods=['POST'])
 def api_clear_session_cache():
