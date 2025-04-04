@@ -2,7 +2,7 @@ from flask import Flask, jsonify, request
 import json
 import os
 import firebase_admin
-from firebase_admin import credentials, firestore, db as firebase_db
+from firebase_admin import credentials, firestore, initialize_app, db as firebase_db
 from datetime import datetime, timedelta
 from races import get_all_races, get_race_by_id, clear_cache as clear_race_cache, search_races
 from drivers import (
