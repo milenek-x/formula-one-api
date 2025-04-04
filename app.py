@@ -107,7 +107,7 @@ def api_clear_schedule_cache():
 @app.route('/api/schedule/<int:race_id>/sessions', methods=['GET'])
 def api_get_race_sessions(race_id):
     race = get_race_by_id(race_id)
-    if not race or 'url' not in race:
+    if not race or 'links' not in race:
         return jsonify({'error': 'Race not found or URL missing'}), 404
     sessions = get_race_sessions(race['url'])
     return jsonify(sessions) if sessions else jsonify({'error': 'Race or sessions not found'}), 404
