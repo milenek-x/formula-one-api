@@ -16,11 +16,15 @@ from teams import (
     get_teams_sorted_by_points, get_top_teams, search_teams,
     clear_cache as clear_team_cache
 )
+from circuits import get_circuit_info, clear_cache as clear_circuit_cache
+
 # from dotenv import load_dotenv
 
 # load_dotenv()
 
 app = Flask(__name__)
+
+# === RUN ONLINE ===
 
 # Firebase setup
 firebase_key_path = os.getenv('FIREBASE_KEY_PATH')
@@ -32,6 +36,14 @@ firebase_key_path_dict = json.loads(firebase_key_path)
 
 # Pass the dict directly to Certificate
 cred = credentials.Certificate(firebase_key_path_dict)
+
+# === RUN LOCALLY ===
+
+# # Point to the path where your Firebase key JSON is saved
+# firebase_key_path = "C:/Users/User/OneDrive - National Institute of Business Management (1)/Personal/MAD/Coursework/formula-one-api.json"
+
+# # Load the key file directly
+# cred = credentials.Certificate(firebase_key_path)
 
 # Initialize Firebase
 initialize_app(cred)
@@ -139,6 +151,44 @@ def api_get_race_sessions(race_id):
 def api_clear_session_cache():
     clear_session_cache()
     return jsonify({'message': 'Session cache cleared.'})
+
+# === CIRCUIT ENDPOINTS ===
+@app.route('/api/schedule/<int:race_id>/circuit', methods=['GET'])
+def api_get_race_circuit(race_id):
+    # Query the Firestore DB to get the race document with matching race_id
+    race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
+    race_snapshot = race_ref.get()
+
+    if not race_snapshot:
+        return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
+
+    race_doc = race_snapshot[0]
+    race = race_doc.to_dict()
+
+    if not race:
+        return jsonify({'error': f'No race data found for ID {race_id}'}), 404
+
+    if 'url' not in race and 'link' not in race:
+        return jsonify({'error': 'Race found, but no "url" or "link" field available.'}), 400
+
+    race_url = race.get('url') or race.get('link')
+
+    try:
+        # Get circuit info via scraping
+        circuit_info = get_circuit_info(race_url)
+
+        # Update Firestore race document with the circuit info
+        db.collection('races').document(race_doc.id).update({'circuit': circuit_info})
+
+        return jsonify(circuit_info)
+
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch or update circuit info.', 'details': str(e)}), 500
+
+@app.route('/api/circuits/cache/clear', methods=['POST'])
+def api_clear_circuit_cache():
+    clear_circuit_cache()
+    return jsonify({'message': 'Circuit cache cleared.'})
 
 # === DRIVER ENDPOINTS ===
 @app.route('/api/drivers', methods=['GET'])
