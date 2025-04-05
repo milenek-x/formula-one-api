@@ -16,7 +16,7 @@ firebase_key_path = os.getenv('FIREBASE_KEY_PATH')
 
 # If running locally, fallback to loading the local JSON key
 if not firebase_key_path:
-    firebase_key_path = "firebase-key.json"
+    firebase_key_path = "C:/Users/User/OneDrive - National Institute of Business Management (1)/Personal/MAD/Coursework/formula-one-api.json"
     cred = credentials.Certificate(firebase_key_path)
 else:
     firebase_key_path_dict = json.loads(firebase_key_path)
