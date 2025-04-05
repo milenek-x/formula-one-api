@@ -2,100 +2,41 @@ from flask import Flask, jsonify, request
 import json
 import os
 import firebase_admin
-from firebase_admin import credentials, firestore, initialize_app, db as firebase_db
-from datetime import datetime, timedelta
-from races import get_all_races, get_race_by_id, clear_cache as clear_race_cache, search_races
-from drivers import (
-    get_all_drivers, get_driver_by_id, get_drivers_by_team,
-    get_top_drivers, get_drivers_sorted_by_points,
-    search_drivers, clear_cache as clear_driver_cache
-)
+from firebase_admin import credentials, firestore, initialize_app
+from races import get_race_by_id, search_races, clear_cache as clear_race_cache
+from drivers import get_driver_by_id, get_drivers_by_team, get_top_drivers, get_drivers_sorted_by_points, search_drivers, clear_cache as clear_driver_cache
 from sessions import get_race_sessions, clear_cache as clear_session_cache
-from teams import (
-    get_all_teams, get_team_by_id, get_team_by_driver,
-    get_teams_sorted_by_points, get_top_teams, search_teams,
-    clear_cache as clear_team_cache
-)
+from teams import get_team_by_id, get_team_by_driver, get_teams_sorted_by_points, get_top_teams, search_teams, clear_cache as clear_team_cache
 from circuits import get_circuit_info, clear_cache as clear_circuit_cache
-
-# from dotenv import load_dotenv
-
-# load_dotenv()
 
 app = Flask(__name__)
 
-# === RUN ONLINE ===
-
-# Firebase setup
+# === Firebase setup ===
 firebase_key_path = os.getenv('FIREBASE_KEY_PATH')
+
+# If running locally, fallback to loading the local JSON key
 if not firebase_key_path:
-    raise Exception("FIREBASE_CONFIG environment variable is not set.")
+    firebase_key_path = "firebase-key.json"
+    cred = credentials.Certificate(firebase_key_path)
+else:
+    firebase_key_path_dict = json.loads(firebase_key_path)
+    cred = credentials.Certificate(firebase_key_path_dict)
 
-# Parse the JSON string into a dictionary
-firebase_key_path_dict = json.loads(firebase_key_path)
-
-# Pass the dict directly to Certificate
-cred = credentials.Certificate(firebase_key_path_dict)
-
-# === RUN LOCALLY ===
-
-# # Point to the path where your Firebase key JSON is saved
-# firebase_key_path = "C:/Users/User/OneDrive - National Institute of Business Management (1)/Personal/MAD/Coursework/formula-one-api.json"
-
-# # Load the key file directly
-# cred = credentials.Certificate(firebase_key_path)
-
-# Initialize Firebase
-initialize_app(cred)
-# Firestore DB
+firebase_admin.initialize_app(cred)
 db = firestore.client()
 
-# === HELPER FUNCTIONS ===
-def is_data_fresh(collection_name):
-    # Check if data is fresh (updated within the last 30 minutes)
-    doc_ref = db.collection(collection_name).document('metadata')
-    doc = doc_ref.get()
-    
-    if doc.exists:
-        last_updated = doc.to_dict().get('last_updated')
-        if last_updated:
-            last_updated_time = datetime.strptime(last_updated, '%Y-%m-%d %H:%M:%S')
-            if datetime.now() - last_updated_time < timedelta(minutes=30):
-                return True
-    return False
-
-def update_timestamp(collection_name):
-    # Update timestamp in Firestore
-    doc_ref = db.collection(collection_name).document('metadata')
-    doc_ref.set({
-        'last_updated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    })
-
+# === Firestore read helper ===
 def fetch_from_firestore(collection_name):
-    # Fetch all documents from Firestore
     collection_ref = db.collection(collection_name)
     docs = collection_ref.stream()
-    return [doc.to_dict() for doc in docs]
+    return [doc.to_dict() for doc in docs if doc.id != "metadata"]
 
-def upload_to_firestore(collection_name, data):
-    # Upload data to Firestore
-    collection_ref = db.collection(collection_name)
-    for item in data:
-        collection_ref.add(item)
+# === ROUTES ===
 
-# === RACE ENDPOINTS ===
 @app.route('/api/schedule', methods=['GET'])
 def api_get_schedule():
-    # Fetch schedule from Firebase if data is fresh, else scrape and update Firebase
-    if is_data_fresh('races'):
-        races = fetch_from_firestore('races')
-        return jsonify(races)
-    else:
-        # Scrape data and upload to Firebase
-        races = get_all_races()
-        upload_to_firestore('races', races)
-        update_timestamp('races')
-        return jsonify(races)
+    races = fetch_from_firestore('races')
+    return jsonify(races)
 
 @app.route('/api/schedule/<int:race_id>', methods=['GET'])
 def api_get_race_by_id(race_id):
@@ -115,47 +56,26 @@ def api_clear_schedule_cache():
     clear_race_cache()
     return jsonify({'message': 'Schedule cache cleared.'})
 
-# === SESSION ENDPOINTS ===
 @app.route('/api/schedule/<int:race_id>/sessions', methods=['GET'])
 def api_get_race_sessions(race_id):
-    # Fetch the race data from Firestore where the race ID field matches the given race_id
     race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
     race_snapshot = race_ref.get()
 
     if not race_snapshot:
         return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
 
-    race = race_snapshot[0].to_dict()  # Fetch the first document (if any) from the query
-
-    if not race:
-        return jsonify({'error': f'No race data found for ID {race_id}'}), 404
-
-    if 'url' not in race and 'link' not in race:
-        return jsonify({'error': 'Race found, but no "url" or "link" field available.'}), 400
-
-    # Try both keys just in case
+    race = race_snapshot[0].to_dict()
     race_url = race.get('url') or race.get('link')
 
-    # Scrape the session data for the race
     sessions = get_race_sessions(race_url)
-
     if sessions:
-        # Update the sessions in Firestore for this specific race
-        race_ref = db.collection('races').document(race_snapshot[0].id)  # Use the document ID to update
-        race_ref.update({'sessions': sessions})
+        db.collection('races').document(race_snapshot[0].id).update({'sessions': sessions})
         return jsonify(sessions)
     else:
         return jsonify({'error': 'No sessions found for this race.'}), 404
 
-@app.route('/api/sessions/cache/clear', methods=['POST'])
-def api_clear_session_cache():
-    clear_session_cache()
-    return jsonify({'message': 'Session cache cleared.'})
-
-# === CIRCUIT ENDPOINTS ===
 @app.route('/api/schedule/<int:race_id>/circuit', methods=['GET'])
 def api_get_race_circuit(race_id):
-    # Query the Firestore DB to get the race document with matching race_id
     race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
     race_snapshot = race_ref.get()
 
@@ -164,43 +84,24 @@ def api_get_race_circuit(race_id):
 
     race_doc = race_snapshot[0]
     race = race_doc.to_dict()
-
-    if not race:
-        return jsonify({'error': f'No race data found for ID {race_id}'}), 404
-
-    if 'url' not in race and 'link' not in race:
-        return jsonify({'error': 'Race found, but no "url" or "link" field available.'}), 400
-
     race_url = race.get('url') or race.get('link')
 
     try:
-        # Get circuit info via scraping
         circuit_info = get_circuit_info(race_url)
-
-        # Update Firestore race document with the circuit info
         db.collection('races').document(race_doc.id).update({'circuit': circuit_info})
-
         return jsonify(circuit_info)
-
     except Exception as e:
-        return jsonify({'error': 'Failed to fetch or update circuit info.', 'details': str(e)}), 500
+        return jsonify({'error': 'Failed to fetch circuit info', 'details': str(e)}), 500
 
 @app.route('/api/circuits/cache/clear', methods=['POST'])
 def api_clear_circuit_cache():
     clear_circuit_cache()
     return jsonify({'message': 'Circuit cache cleared.'})
 
-# === DRIVER ENDPOINTS ===
 @app.route('/api/drivers', methods=['GET'])
 def api_get_all_drivers():
-    if is_data_fresh('drivers'):
-        drivers = fetch_from_firestore('drivers')
-        return jsonify(drivers)
-    else:
-        drivers = get_all_drivers()
-        upload_to_firestore('drivers', drivers)
-        update_timestamp('drivers')
-        return jsonify(drivers)
+    drivers = fetch_from_firestore('drivers')
+    return jsonify(drivers)
 
 @app.route('/api/driver/<int:driver_id>', methods=['GET'])
 def api_get_driver_by_id(driver_id):
@@ -209,8 +110,8 @@ def api_get_driver_by_id(driver_id):
 
 @app.route('/api/drivers/team/<string:team_name>', methods=['GET'])
 def api_get_drivers_by_team(team_name):
-    team_drivers = get_drivers_by_team(team_name)
-    return jsonify(team_drivers) if team_drivers else jsonify({'error': 'No drivers found for team'}), 404
+    drivers = get_drivers_by_team(team_name)
+    return jsonify(drivers) if drivers else jsonify({'error': 'No drivers found'}), 404
 
 @app.route('/api/drivers/sorted/points', methods=['GET'])
 def api_get_sorted_drivers():
@@ -233,22 +134,15 @@ def api_clear_driver_cache():
     clear_driver_cache()
     return jsonify({"message": "Driver cache cleared."})
 
-# === TEAM ENDPOINTS ===
 @app.route('/api/teams', methods=['GET'])
 def api_get_teams():
-    if is_data_fresh('teams'):
-        teams = fetch_from_firestore('teams')
-        return jsonify(teams)
-    else:
-        teams = get_all_teams()
-        upload_to_firestore('teams', teams)
-        update_timestamp('teams')
-        return jsonify(teams)
+    teams = fetch_from_firestore('teams')
+    return jsonify(teams)
 
 @app.route('/api/teams/<int:team_id>', methods=['GET'])
 def api_get_team_by_id(team_id):
     team = get_team_by_id(team_id)
-    return jsonify(team) if team else jsonify({'message': 'Team not found'}), 404
+    return jsonify(team) if team else jsonify({'error': 'Team not found'}), 404
 
 @app.route('/api/teams/driver', methods=['GET'])
 def api_get_team_by_driver():
@@ -279,7 +173,11 @@ def api_clear_team_cache():
     clear_team_cache()
     return jsonify({"message": "Team cache cleared."})
 
-# === ROOT ===
+@app.route('/api/sessions/cache/clear', methods=['POST'])
+def api_clear_session_cache():
+    clear_session_cache()
+    return jsonify({'message': 'Session cache cleared.'})
+
 @app.route('/', methods=['GET'])
 def index():
     return jsonify({"message": "F1 API is running"})
