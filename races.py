@@ -47,6 +47,47 @@ def get_all_races():
                 full_link = f"{base_url}{grand_prix_link}"
                 race_data['link'] = full_link
 
+            flag_img = race.find('img', class_='f1-c-image h-[1.625rem]')
+            if flag_img:
+                race_data['flag_image'] = flag_img.get('src')
+
+            circuit_img = race.find('img', class_='f1-c-image h-[110px] w-full object-cover')
+            if circuit_img:
+                race_data['circuit_image'] = circuit_img.get('src')
+
+            # ========== PODIUM EXTRACTION ==========
+            podium_section = race.find('div', class_='h-[110px] grid grid-cols-3 gap-micro items-end')
+            if podium_section:
+                podium = []
+                podium_divs = podium_section.find_all('div', recursive=False)
+
+                for div in podium_divs:
+                    order_class = div.get('class', [])
+                    order = None
+                    if 'order-1' in order_class:
+                        order = 2
+                    elif 'order-2' in order_class:
+                        order = 1
+                    elif 'order-3' in order_class:
+                        order = 3
+
+                    if order:
+                        driver_img = div.find('img', class_='f1-c-image')
+                        driver_name = driver_img.get('alt') if driver_img else None
+                        driver_src = driver_img.get('src') if driver_img else None
+                        driver_code_tag = div.find('p', class_='f1-heading tracking-normal text-fs-14px leading-tight normal-case font-bold non-italic f1-heading__body font-formulaOne')
+                        driver_code = driver_code_tag.get_text(strip=True) if driver_code_tag else None
+
+                        podium.append({
+                            'position': order,
+                            'driver_name': driver_name,
+                            'driver_code': driver_code,
+                            'driver_image': driver_src
+                        })
+
+                if podium:
+                    race_data['podium'] = sorted(podium, key=lambda x: x['position'])
+
             races_info.append(race_data)
 
         cached_races = races_info
