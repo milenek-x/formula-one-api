@@ -104,7 +104,7 @@ def api_get_race_results(race_id):
         race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
         race = race_ref.get()
 
-        if not race.exists:
+        if not race:
             return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
 
         race_data = race.to_dict()
