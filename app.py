@@ -15,15 +15,17 @@ app = Flask(__name__)
 # === Firebase setup ===
 firebase_key_path = os.getenv('FIREBASE_KEY_PATH')
 
-# If running locally, fallback to loading the local JSON key
-if not firebase_key_path:
-    firebase_key_path = "C:/Users/User/OneDrive - National Institute of Business Management (1)/Personal/MAD/Coursework/formula-one-api.json"
-    cred = credentials.Certificate(firebase_key_path)
-else:
-    firebase_key_path_dict = json.loads(firebase_key_path)
-    cred = credentials.Certificate(firebase_key_path_dict)
+if not firebase_admin._apps:
+    # If running locally, fallback to loading the local JSON key
+    if not firebase_key_path:
+        firebase_key_path = "C:/Users/User/OneDrive - National Institute of Business Management (1)/Personal/MAD/Coursework/formula-one-api.json"
+        cred = credentials.Certificate(firebase_key_path)
+    else:
+        firebase_key_path_dict = json.loads(firebase_key_path)
+        cred = credentials.Certificate(firebase_key_path_dict)
 
-firebase_admin.initialize_app(cred)
+    firebase_admin.initialize_app(cred)
+
 db = firestore.client()
 
 # === Firestore read helper ===
