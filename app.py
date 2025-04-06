@@ -102,13 +102,14 @@ def api_get_race_results(race_id):
     try:
         # Fetch race document from Firestore
         race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
-        race = race_ref.get()
+        race_snapshot = race_ref.get()
 
-        if not race:
+        if not race_snapshot:
             return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
 
-        race_data = race.to_dict()
-        race_url = race_data.get('link')  # Get the race URL from Firestore document
+        race_doc = race_snapshot[0]
+        race = race_doc.to_dict()
+        race_url = race.get('link')  # Get the race URL from Firestore document
 
         if not race_url:
             return jsonify({'error': f'No URL found for race {race_id}'}), 404
