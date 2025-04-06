@@ -143,9 +143,7 @@ def api_get_race_results(race_id):
                 session['results'] = session_results
 
         # Update Firestore with the session results
-        race_ref.update({
-            'sessions': sessions
-        })
+        db.collection('races').document(race_doc.id).update({'sessions': sessions})
 
         return jsonify(sessions)
     
