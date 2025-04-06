@@ -14,10 +14,10 @@ def parse_session_results(session_url):
 
     # Find the table that contains the results
     table = soup.find('table', class_='f1-table f1-table-with-data w-fulls')
+    print(f"table - {table}")
 
     if table:
         rows = table.find_all('tr', class_=['bg-brand-white', 'bg-grey-10'])  # Find rows with result data
-        print(f"rows - {rows}")
         for row in rows:
             cols = row.find_all('td')
             if len(cols) >= 7:  # Ensure we have all the required columns
