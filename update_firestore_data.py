@@ -78,7 +78,6 @@ def update_circuits():
 
 def update_sessions():
     print("Updating sessions...")
-    from races import get_all_race_urls
     race_docs = db.collection('races').stream()
 
     for doc in race_docs:
