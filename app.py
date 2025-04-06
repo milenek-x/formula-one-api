@@ -8,6 +8,7 @@ from drivers import get_driver_by_id, get_drivers_by_team, get_top_drivers, get_
 from sessions import get_race_sessions, clear_cache as clear_session_cache
 from teams import get_team_by_id, get_team_by_driver, get_teams_sorted_by_points, get_top_teams, search_teams, clear_cache as clear_team_cache
 from circuits import get_circuit_info, clear_cache as clear_circuit_cache
+from results import get_results_for_races
 from update_firestore_data import update_all, update_races, update_drivers, update_teams, update_circuits, update_sessions
 
 app = Flask(__name__)
