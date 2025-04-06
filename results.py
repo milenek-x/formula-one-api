@@ -9,6 +9,7 @@ def parse_session_results(session_url):
     response = requests.get(session_url, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
 
+    print(f"session_url: {session_url}")
     print(soup.prettify())  # Pretty print the entire HTML structure
 
     # Initialize a list to store results
