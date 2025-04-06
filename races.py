@@ -43,17 +43,9 @@ def get_all_races():
                 race_data['location'] = location.get_text(strip=True)
 
             grand_prix_link = race.get('href')
-            # if grand_prix_link:
-            #     full_link = f"{base_url}{grand_prix_link}"
-            #     race_data['link'] = full_link
-
-            #     # Fetch sessions for this race
-            #     try:
-            #         race_data['sessions'] = extract_sessions(full_link)
-            #     except Exception as e:
-            #         print(f"[WARNING] Failed to get sessions for {race_data['grand_prix_name']}: {e}")
-            #         traceback.print_exc()
-            #         race_data['sessions'] = []
+            if grand_prix_link:
+                full_link = f"{base_url}{grand_prix_link}"
+                race_data['link'] = full_link
 
             races_info.append(race_data)
 
