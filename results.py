@@ -13,7 +13,7 @@ def parse_session_results(session_url):
     results = []
 
     # Find the table that contains the results
-    table = soup.find('table', class_='f1-table')
+    table = soup.find('table', class_='f1-table f1-table-with-data w-fulls')
 
     if table:
         rows = table.find_all('tr', class_=['bg-brand-white', 'bg-grey-10'])  # Find rows with result data
