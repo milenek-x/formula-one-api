@@ -15,20 +15,20 @@ jobs:
 
       - name: Trigger Update Races
         run: |
-          curl -X GET https://formula-one-api.vercel.app/api/update/races
+          curl -X POST https://formula-one-api.vercel.app/api/update/races
 
       - name: Trigger Update Drivers
         run: |
-          curl -X GET https://formula-one-api.vercel.app/api/update/drivers
+          curl -X POST https://formula-one-api.vercel.app/api/update/drivers
 
       - name: Trigger Update Teams
         run: |
-          curl -X GET https://formula-one-api.vercel.app/api/update/teams
+          curl -X POST https://formula-one-api.vercel.app/api/update/teams
 
       - name: Trigger Update Circuits
         run: |
-          curl -X GET https://formula-one-api.vercel.app/api/update/circuits
+          curl -X POST https://formula-one-api.vercel.app/api/update/circuits
 
       - name: Trigger Update Sessions
         run: |
-          curl -X GET https://formula-one-api.vercel.app/api/update/sessions
+          curl -X POST https://formula-one-api.vercel.app/api/update/sessions
