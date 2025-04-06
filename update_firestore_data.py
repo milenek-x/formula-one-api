@@ -72,8 +72,11 @@ def update_circuits():
 
         try:
             circuit_info = get_circuit_info(race_url)
-            db.collection('races').where('link', '==', race_url).limit(1).update({'circuit': circuit_info})
-            # db.collection('races').document(doc.id).update({'circuit': circuit_info})
+            docs = list(db.collection('races').where('link', '==', race_url).limit(1).stream())
+            if docs:
+                docs[0].reference.update({'circuit': circuit_info})
+            else:
+                print(f"No race found with link: {race_url}")
             print(f"Updated circuit for race: {race.get('name')}")
         except Exception as e:
             print(f"Failed to update circuit for race {race.get('name')}: {e}")
@@ -91,7 +94,11 @@ def update_sessions():
         try:
             sessions = get_race_sessions(race_url)
             if sessions:
-                db.collection('races').where('link', '==', race_url).limit(1).update({'sessions': sessions})
+                docs = list(db.collection('races').where('link', '==', race_url).limit(1).stream())
+                if docs:
+                    docs[0].reference.update({'sessions': sessions})
+                else:
+                    print(f"No race found with link: {race_url}")
                 # db.collection('races').document(doc.id).update({'sessions': sessions})
                 print(f"Updated sessions for race: {race.get('name')}")
         except Exception as e:
