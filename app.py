@@ -181,10 +181,25 @@ def api_clear_session_cache():
     clear_session_cache()
     return jsonify({'message': 'Session cache cleared.'})
 
+@app.route('/api/update/driver', methods=['POST'])
+def update_driver_data():
+    update_drivers()
+    return jsonify({'message': 'Driver firebase data updated.'})
+
+@app.route('/api/update/team', methods=['POST'])
+def update_team_data():
+    update_teams()
+    return jsonify({'message': 'Team firebase data updated.'})
+
+@app.route('/api/update/race', methods=['POST'])
+def update_race_data():
+    update_races()
+    return jsonify({'message': 'Race firebase data updated.'})
+
 @app.route('/api/update', methods=['POST'])
-def update_data():
+def update_all_data():
     update_all()
-    return jsonify({'message': 'Firebase data updated.'})
+    return jsonify({'message': 'All firebase data updated.'})
 
 @app.route('/', methods=['GET'])
 def index():
