@@ -9,16 +9,10 @@ def parse_session_results(session_url):
     response = requests.get(session_url, headers=headers)
     soup = BeautifulSoup(response.content, 'html.parser')
 
+    print(soup.prettify())  # Pretty print the entire HTML structure
+
     # Initialize a list to store results
     results = []
-
-
-    container = soup.find('div', class_='overflow-x-auto max-tablet:-mx-normal')
-    if container:
-        table = container.find('table', class_='f1-table f1-table-with-data w-full')
-        print(f"Found table: {table}")
-    else:
-        print("Container not found.")
 
     # Find the table that contains the results
     table = soup.find('table') #, class_='f1-table f1-table-with-data w-full')
