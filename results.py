@@ -17,6 +17,7 @@ def parse_session_results(session_url):
 
     if table:
         rows = table.find_all('tr', class_=['bg-brand-white', 'bg-grey-10'])  # Find rows with result data
+        print(f"rows - {rows}")
         for row in rows:
             cols = row.find_all('td')
             if len(cols) >= 7:  # Ensure we have all the required columns
