@@ -14,7 +14,7 @@ def parse_session_results(session_url):
 
     # Find the table that contains the results
     table = soup.find('table') #, class_='f1-table f1-table-with-data w-full')
-    print(f"table - {table}")
+    print(f"session url - {session_url}\ttable - {table}")
 
     if table:
         rows = table.find_all('tr', class_=['bg-brand-white', 'bg-grey-10'])  # Find rows with result data
