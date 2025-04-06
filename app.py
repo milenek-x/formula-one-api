@@ -137,6 +137,8 @@ def api_get_race_results(race_id):
             elif 'sprint qualifying' in session_name:
                 session_url = f"{race_url}/sprint-grid"
             
+            print(f"{session_url}")
+            
             if session_url:
                 # Get the results for this session
                 session_results = parse_session_results(session_url)
