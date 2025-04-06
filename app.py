@@ -96,6 +96,26 @@ def api_get_race_circuit(race_id):
     except Exception as e:
         return jsonify({'error': 'Failed to fetch circuit info', 'details': str(e)}), 500
 
+@app.route('/api/races/<int:race_id>/results', methods=['GET'])
+def api_get_race_results(race_id):
+    try:
+        # Fetch results for all sessions in the race
+        get_results_for_races()  # This will update Firestore with session results
+        race_ref = db.collection('races').document(race_id)
+        race = race_ref.get().to_dict()
+
+        if not race:
+            return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
+
+        # Return the race sessions with results
+        sessions = race.get('sessions', [])
+        if sessions:
+            return jsonify(sessions)
+        else:
+            return jsonify({'error': 'No results found for this race.'}), 404
+    except Exception as e:
+        return jsonify({'error': f'Failed to fetch race results: {str(e)}'}), 500
+
 @app.route('/api/circuits/cache/clear', methods=['POST'])
 def api_clear_circuit_cache():
     clear_circuit_cache()
