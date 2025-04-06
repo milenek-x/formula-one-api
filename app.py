@@ -8,7 +8,7 @@ from drivers import get_driver_by_id, get_drivers_by_team, get_top_drivers, get_
 from sessions import get_race_sessions, clear_cache as clear_session_cache
 from teams import get_team_by_id, get_team_by_driver, get_teams_sorted_by_points, get_top_teams, search_teams, clear_cache as clear_team_cache
 from circuits import get_circuit_info, clear_cache as clear_circuit_cache
-from update_firestore_data import update_all, update_races, update_drivers, update_teams
+from update_firestore_data import update_all, update_races, update_drivers, update_teams, update_circuits, update_sessions
 
 app = Flask(__name__)
 
@@ -181,20 +181,30 @@ def api_clear_session_cache():
     clear_session_cache()
     return jsonify({'message': 'Session cache cleared.'})
 
-@app.route('/api/update/driver', methods=['POST'])
+@app.route('/api/update/drivers', methods=['POST'])
 def update_driver_data():
     update_drivers()
     return jsonify({'message': 'Driver firebase data updated.'})
 
-@app.route('/api/update/team', methods=['POST'])
+@app.route('/api/update/teams', methods=['POST'])
 def update_team_data():
     update_teams()
     return jsonify({'message': 'Team firebase data updated.'})
 
-@app.route('/api/update/race', methods=['POST'])
+@app.route('/api/update/races', methods=['POST'])
 def update_race_data():
     update_races()
-    return jsonify({'message': 'Race firebase data updated.'})
+    return jsonify({'message': 'Race firebase basic data updated.'})
+
+@app.route('/api/update/circuits', methods=['POST'])
+def update_circuit_data():
+    update_circuits()
+    return jsonify({'message': 'Race firebase circuit data updated.'})
+
+@app.route('/api/update/sessions', methods=['POST'])
+def update_session_data():
+    update_sessions()
+    return jsonify({'message': 'Race firebase session data updated.'})
 
 @app.route('/api/update', methods=['POST'])
 def update_all_data():

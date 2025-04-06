@@ -7,6 +7,8 @@ from firebase_admin import credentials, firestore
 from races import get_all_races
 from drivers import get_all_drivers
 from teams import get_all_teams
+from circuits import update_circuits_for_all_races
+from sessions import update_sessions_for_all_races
 
 # Firebase setup
 firebase_key_path = os.getenv('FIREBASE_KEY_PATH')
@@ -57,11 +59,22 @@ def update_teams():
     teams = get_all_teams()
     upload_to_firestore('teams', teams)
 
+def update_circuits():
+    print("Updating circuits...")
+    update_circuits_for_all_races()
+
+def update_sessions():
+    print("Updating sessions...")
+    update_sessions_for_all_races()
+
 def update_all():
     update_races()
     update_drivers()
     update_teams()
+    update_circuits()
+    update_sessions()
     print("Update complete.")
+
 
 if __name__ == "__main__":
     update_all()

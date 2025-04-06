@@ -1,5 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
+from races import get_all_race_urls
 
 cached_circuits = {}
 
@@ -46,6 +47,18 @@ def get_circuit_info(circuit_url):
     # Cache result
     cached_circuits[circuit_url] = circuit
     return circuit
+
+def update_circuits_for_all_races():
+    race_urls = get_all_race_urls()  # Get all race URLs
+    all_circuits = []
+    
+    # Loop through each race URL and get circuit info
+    for url in race_urls:
+        circuit_info = get_circuit_info(url)
+        all_circuits.append(circuit_info)
+
+    # Optionally return all circuits if you need to return a jsonify message
+    return all_circuits
 
 def clear_cache():
     global cached_circuits

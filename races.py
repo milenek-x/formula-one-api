@@ -78,6 +78,11 @@ def search_races(query):
             results.append(race)
     return results
 
+def get_all_race_urls():
+    races = get_all_races()
+    race_urls = [race['link'] for race in races if 'link' in race]
+    return race_urls
+
 def clear_cache():
     global cached_races
     cached_races = []

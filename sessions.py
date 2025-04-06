@@ -42,6 +42,22 @@ def get_race_sessions(race_url):
 
     return session_list
 
+def update_sessions_for_all_races():
+    race_urls = get_all_race_urls()  # Get all race URLs
+    all_sessions = []
+    
+    # Loop through each race URL and get circuit info
+    for url in race_urls:
+        race_sessions = get_race_sessions(url)
+        all_sessions.append({
+            'race_url': url,
+            'sessions': race_sessions
+        })
+
+    # Optionally return all circuits if you need to return a jsonify message
+    return all_sessions
+
+
 def clear_cache():
     global cached_sessions
     cached_sessions = []
