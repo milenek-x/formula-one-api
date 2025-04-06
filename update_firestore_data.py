@@ -73,7 +73,7 @@ def update_circuits():
         try:
             circuit_info = get_circuit_info(race_url)
             docs = list(db.collection('races').where('link', '==', race_url).limit(1).stream())
-            print(f"url: {circuit_url}\tdocs: {docs}")
+            print(f"url: {race_url}\tdocs: {docs}")
             if docs:
                 docs[0].reference.update({'circuit': circuit_info})
             else:
