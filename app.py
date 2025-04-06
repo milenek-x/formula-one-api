@@ -101,7 +101,7 @@ def api_get_race_circuit(race_id):
 def api_get_race_results(race_id):
     try:
         # Fetch race document from Firestore
-        race_ref = db.collection('races').document(str(race_id))
+        race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
         race = race_ref.get()
 
         if not race.exists:
