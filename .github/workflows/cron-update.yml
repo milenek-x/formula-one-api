@@ -1,0 +1,26 @@
+name: Update Firestore Every 15 Minutes
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"  # This runs every 15 minutes
+  workflow_dispatch:        # This allows manual trigger from GitHub UI
+
+jobs:
+  update-firestore:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Trigger Update Races
+        run: |
+          curl -X GET https://your-vercel-app.vercel.app/api/update/races
+
+      - name: Trigger Update Drivers
+        run: |
+          curl -X GET https://your-vercel-app.vercel.app/api/update/drivers
+
+      - name: Trigger Update Teams
+        run: |
+          curl -X GET https://your-vercel-app.vercel.app/api/update/teams
