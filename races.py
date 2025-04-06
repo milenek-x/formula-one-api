@@ -48,11 +48,11 @@ def get_all_races():
                 race_data['link'] = full_link
 
             result_link_tag = race.find('a', class_='grid grid-flow-col auto-cols-max rounded-5 cursor-pointer items-center transition-colors duration-200 font-titillium font-[600] w-full min-w-max laptop:w-auto laptop:text-center laptop:auto-cols-auto focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-[3px] focus-visible:outline-carbonBlack disabled:pointer-events-none disabled:opacity-75 disabled:cursor-default text-12 px-[15px] gap-[8px] h-[39px] bg-tranparent text-white uppercase border-[1px] shadow-innerBlack transition-shadow duration-200 laptop:!shadow-white laptop:hover:shadow-inner !text-primary hover:!shadow-primary focus:!shadow-inner focus:!shadow-primary !justify-between')
-
+            print(race.find('a'))
             if result_link_tag and result_link_tag.has_attr('href'):
                 href = result_link_tag['href']
                 race_data['result_link'] = href.split('/')[-1]  # or store full href, or split however you want
-    
+
             flag_img = race.find('img', class_='f1-c-image h-[1.625rem]')
             if flag_img:
                 race_data['flag_image'] = flag_img.get('src')
