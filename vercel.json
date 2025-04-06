@@ -4,26 +4,12 @@
     {
       "src": "app.py",
       "use": "@vercel/python"
-    },
-    {
-      "src": "update_data.py",
-      "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/api/update-data",
-      "dest": "update_data.py"
-    },
-    {
       "src": "/(.*)",
       "dest": "/app.py"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/update-data",
-      "schedule": "*/15 * * * *"
     }
   ]
 }
