@@ -100,20 +100,54 @@ def api_get_race_circuit(race_id):
 @app.route('/api/races/<int:race_id>/results', methods=['GET'])
 def api_get_race_results(race_id):
     try:
-        # Fetch results for all sessions in the race
-        get_results_for_races()  # This will update Firestore with session results
-        race_ref = db.collection('races').document(race_id)
-        race = race_ref.get().to_dict()
+        # Fetch race document from Firestore
+        race_ref = db.collection('races').document(str(race_id))
+        race = race_ref.get()
 
-        if not race:
+        if not race.exists:
             return jsonify({'error': f'Race with ID {race_id} not found.'}), 404
 
-        # Return the race sessions with results
-        sessions = race.get('sessions', [])
-        if sessions:
-            return jsonify(sessions)
-        else:
-            return jsonify({'error': 'No results found for this race.'}), 404
+        race_data = race.to_dict()
+        race_url = race_data.get('link')  # Get the race URL from Firestore document
+
+        if not race_url:
+            return jsonify({'error': f'No URL found for race {race_id}'}), 404
+
+        # Fetch the sessions for this race (or any other logic to fetch sessions)
+        sessions = get_race_sessions(race_url)
+
+        # Fetch and add results to each session
+        for session in sessions:
+            session_name = session.get('name', '').lower()
+            session_url = None
+
+            if 'practice 1' in session_name:
+                session_url = f"{race_url}/practice/1"
+            elif 'practice 2' in session_name:
+                session_url = f"{race_url}/practice/2"
+            elif 'practice 3' in session_name:
+                session_url = f"{race_url}/practice/3"
+            elif 'qualifying' in session_name:
+                session_url = f"{race_url}/starting-grid"
+            elif 'race' in session_name:
+                session_url = f"{race_url}/race-result"
+            elif 'sprint' in session_name:
+                session_url = f"{race_url}/sprint-result"
+            elif 'sprint qualifying' in session_name:
+                session_url = f"{race_url}/sprint-grid"
+            
+            if session_url:
+                # Get the results for this session
+                session_results = parse_session_results(session_url)
+                session['results'] = session_results
+
+        # Update Firestore with the session results
+        race_ref.update({
+            'sessions': sessions
+        })
+
+        return jsonify(sessions)
+    
     except Exception as e:
         return jsonify({'error': f'Failed to fetch race results: {str(e)}'}), 500
 
