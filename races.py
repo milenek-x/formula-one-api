@@ -48,6 +48,7 @@ def get_all_races():
                 race_data['link'] = full_link
 
             wrapper = race.find('div', class_='grid grid-cols-none tablet:inline-flex gap-1')
+            print(wrapper)
 
             if wrapper:
                 # Step 2: Find the first <a> inside this div
