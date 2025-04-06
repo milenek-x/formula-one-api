@@ -4,7 +4,7 @@ from datetime import datetime
 import firebase_admin
 from firebase_admin import credentials, firestore
 
-from races import get_all_races
+from races import get_all_races, get_all_race_urls
 from drivers import get_all_drivers
 from teams import get_all_teams
 from circuits import update_circuits_for_all_races
@@ -61,11 +61,40 @@ def update_teams():
 
 def update_circuits():
     print("Updating circuits...")
-    update_circuits_for_all_races()
+    race_docs = db.collection('races').stream()
+
+    for doc in race_docs:
+        race = doc.to_dict()
+        race_url = race.get('url') or race.get('link')
+        if not race_url:
+            continue
+
+        try:
+            circuit_info = get_circuit_info(race_url)
+            db.collection('races').document(doc.id).update({'circuit': circuit_info})
+            print(f"Updated circuit for race: {race.get('name')}")
+        except Exception as e:
+            print(f"Failed to update circuit for race {race.get('name')}: {e}")
 
 def update_sessions():
     print("Updating sessions...")
-    update_sessions_for_all_races()
+    from races import get_all_race_urls
+    race_docs = db.collection('races').stream()
+
+    for doc in race_docs:
+        race = doc.to_dict()
+        race_url = race.get('url') or race.get('link')
+        if not race_url:
+            continue
+
+        try:
+            sessions = get_race_sessions(race_url)
+            if sessions:
+                db.collection('races').document(doc.id).update({'sessions': sessions})
+                print(f"Updated sessions for race: {race.get('name')}")
+        except Exception as e:
+            print(f"Failed to update sessions for race {race.get('name')}: {e}")
+
 
 def update_all():
     update_races()
