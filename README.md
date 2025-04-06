@@ -54,7 +54,7 @@ A Flask-based RESTful API for Formula 1 data including race schedules, drivers, 
 
 #### 🔹 Get All Races
 ```bash
-curl https://formula-one-api.vercel.app/api/schedule
+curl https://formula-one-api.vercel.app/api/races
 ```
 
 **Response:**
@@ -75,17 +75,17 @@ curl https://formula-one-api.vercel.app/api/schedule
 
 #### 🔹 Get Race by ID
 ```bash
-curl https://formula-one-api.vercel.app/api/schedule/22
+curl https://formula-one-api.vercel.app/api/races/22
 ```
 
 #### 🔹 Search Races
 ```bash
-curl "https://formula-one-api.vercel.app/api/schedule/search?q=vegas"
+curl "https://formula-one-api.vercel.app/api/races/search?q=vegas"
 ```
 
 #### 🔹 Clear Race Cache
 ```bash
-curl -X POST https://formula-one-api.vercel.app/api/schedule/cache/clear
+curl -X POST https://formula-one-api.vercel.app/api/races/cache/clear
 ```
 
 ---
@@ -206,7 +206,7 @@ curl -X POST https://formula-one-api.vercel.app/api/teams/cache/clear
 
 #### 🔹 Get Race Sessions
 ```bash
-curl https://formula-one-api.vercel.app/api/schedule/22/sessions
+curl https://formula-one-api.vercel.app/api/races/22/sessions
 ```
 
 **Response:**

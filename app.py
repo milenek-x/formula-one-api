@@ -36,17 +36,17 @@ def fetch_from_firestore(collection_name):
 
 # === ROUTES ===
 
-@app.route('/api/schedule', methods=['GET'])
+@app.route('/api/races', methods=['GET'])
 def api_get_schedule():
     races = fetch_from_firestore('races')
     return jsonify(races)
 
-@app.route('/api/schedule/<int:race_id>', methods=['GET'])
+@app.route('/api/races/<int:race_id>', methods=['GET'])
 def api_get_race_by_id(race_id):
     race = get_race_by_id(race_id)
     return jsonify(race) if race else jsonify({'error': 'Race not found'}), 404
 
-@app.route('/api/schedule/search', methods=['GET'])
+@app.route('/api/races/search', methods=['GET'])
 def api_search_schedule():
     query = request.args.get('q', '').lower()
     if not query:
@@ -54,12 +54,12 @@ def api_search_schedule():
     results = search_races(query)
     return jsonify(results) if results else jsonify({'message': 'No matching races found.'}), 404
 
-@app.route('/api/schedule/cache/clear', methods=['POST'])
+@app.route('/api/races/cache/clear', methods=['POST'])
 def api_clear_schedule_cache():
     clear_race_cache()
     return jsonify({'message': 'Schedule cache cleared.'})
 
-@app.route('/api/schedule/<int:race_id>/sessions', methods=['GET'])
+@app.route('/api/races/<int:race_id>/sessions', methods=['GET'])
 def api_get_race_sessions(race_id):
     race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
     race_snapshot = race_ref.get()
@@ -77,7 +77,7 @@ def api_get_race_sessions(race_id):
     else:
         return jsonify({'error': 'No sessions found for this race.'}), 404
 
-@app.route('/api/schedule/<int:race_id>/circuit', methods=['GET'])
+@app.route('/api/races/<int:race_id>/circuit', methods=['GET'])
 def api_get_race_circuit(race_id):
     race_ref = db.collection('races').where('race_id', '==', race_id).limit(1)
     race_snapshot = race_ref.get()
