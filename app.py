@@ -179,9 +179,10 @@ def api_clear_session_cache():
     clear_session_cache()
     return jsonify({'message': 'Session cache cleared.'})
 
-@app.route()
+@app.route('/api/update', methods=['POST'])
 def update_data():
     update_all()
+    return jsonify({'message': 'Firebase data updated.'})
 
 @app.route('/', methods=['GET'])
 def index():
