@@ -72,7 +72,7 @@ def update_circuits():
 
         try:
             circuit_info = get_circuit_info(race_url)
-            db.collection('races').where('race_id', '==', race_id).limit(1).update({'circuit': circuit_info})
+            db.collection('races').where('link', '==', race_url).limit(1).update({'circuit': circuit_info})
             # db.collection('races').document(doc.id).update({'circuit': circuit_info})
             print(f"Updated circuit for race: {race.get('name')}")
         except Exception as e:
@@ -91,7 +91,7 @@ def update_sessions():
         try:
             sessions = get_race_sessions(race_url)
             if sessions:
-                db.collection('races').where('race_id', '==', race_id).limit(1).update({'sessions': sessions})
+                db.collection('races').where('link', '==', race_url).limit(1).update({'sessions': sessions})
                 # db.collection('races').document(doc.id).update({'sessions': sessions})
                 print(f"Updated sessions for race: {race.get('name')}")
         except Exception as e:
