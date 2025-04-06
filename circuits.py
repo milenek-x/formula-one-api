@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 from races import get_all_race_urls
+import re
 
 cached_circuits = {}
 
