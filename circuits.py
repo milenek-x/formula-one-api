@@ -28,7 +28,15 @@ def get_circuit_info(circuit_url):
     fact_titles = ['first_grand_prix', 'number_of_laps', 'circuit_length_km', 'race_distance_km', 'lap_record']
     fact_tags = soup.select('.f1-grid .f1-heading')
     for label, tag in zip(fact_titles, fact_tags):
-        circuit[label] = tag.get_text(strip=True)
+        text = tag.get_text(strip=True)
+        if label == 'lap_record':
+            # Process lap_record into time, driver, and year
+            lap_record_time, lap_record_driver, lap_record_year = process_lap_record(text)
+            circuit['lap_record_time'] = lap_record_time
+            circuit['lap_record_driver'] = lap_record_driver
+            circuit['lap_record_year'] = lap_record_year
+        else:
+            circuit[label] = text
 
     # Description section (Optional: Try to find interesting info)
     prose = soup.select_one('.prose')
@@ -47,6 +55,22 @@ def get_circuit_info(circuit_url):
     # Cache result
     cached_circuits[circuit_url] = circuit
     return circuit
+
+def process_lap_record(lap_record_str):
+    """
+    Given a lap record string like '1:30.965Kimi Antonelli(2025)', 
+    this function returns the lap time, driver name, and year.
+    """
+    # Regular expression to extract time, driver name, and year
+    match = re.match(r'(\d+:\d+\.\d+)([A-Za-z\s]+)\((\d{4})\)', lap_record_str)
+    if match:
+        lap_record_time = match.group(1)  # "1:30.965"
+        lap_record_driver = match.group(2).strip()  # "Kimi Antonelli"
+        lap_record_year = match.group(3)  # "2025"
+        return lap_record_time, lap_record_driver, lap_record_year
+    else:
+        # If the format is not correct, return None values
+        return None, None, None
 
 def clear_cache():
     global cached_circuits
